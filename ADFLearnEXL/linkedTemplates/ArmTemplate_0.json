@@ -1,0 +1,889 @@
+{
+	"$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+	"contentVersion": "1.0.0.0",
+	"parameters": {
+		"factoryName": {
+			"type": "string",
+			"metadata": "Data Factory name",
+			"defaultValue": "ADFLearnEXL"
+		},
+		"AzureBlobStorageLinkedservice_connectionString": {
+			"type": "secureString",
+			"metadata": "Secure string for 'connectionString' of 'AzureBlobStorageLinkedservice'"
+		},
+		"WeatherMan LS_properties_typeProperties_url": {
+			"type": "string",
+			"defaultValue": "http://api.weatherstack.com/current?access_key=31f7fc3d88dc0f174323d59743f173a9"
+		},
+		"WeatherStackAPI_properties_typeProperties_url": {
+			"type": "string",
+			"defaultValue": "http://api.weatherstack.com/current?access_key=31f7fc3d88dc0f174323d59743f173a9&query=Jamshedpur"
+		}
+	},
+	"variables": {
+		"factoryId": "[concat('Microsoft.DataFactory/factories/', parameters('factoryName'))]"
+	},
+	"resources": [
+		{
+			"name": "[concat(parameters('factoryName'), '/WaitActivityDemo')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "Wait1",
+						"type": "Wait",
+						"dependsOn": [],
+						"userProperties": [],
+						"typeProperties": {
+							"waitTimeInSeconds": 20
+						}
+					}
+				],
+				"annotations": []
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/Webactivity')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "WeatherMan",
+						"type": "WebActivity",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"url": {
+								"value": "@concat('http://api.weatherstack.com/current?access_key=31f7fc3d88dc0f174323d59743f173a9','&query=',pipeline().parameters.query)",
+								"type": "Expression"
+							},
+							"method": "GET",
+							"headers": {}
+						}
+					},
+					{
+						"name": "GetWeatherCountry",
+						"type": "WebActivity",
+						"dependsOn": [
+							{
+								"activity": "WeatherMan",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"url": {
+								"value": "@concat('http://api.weatherstack.com/current?access_key=31f7fc3d88dc0f174323d59743f173a9','&query=',activity('WeatherMan').output.location.country)",
+								"type": "Expression"
+							},
+							"method": "GET",
+							"headers": {}
+						}
+					}
+				],
+				"parameters": {
+					"query": {
+						"type": "string"
+					}
+				},
+				"annotations": [],
+				"lastPublishTime": "2021-08-11T07:29:24Z"
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/AzureBlobStorageLinkedservice')]",
+			"type": "Microsoft.DataFactory/factories/linkedServices",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"annotations": [],
+				"type": "AzureBlobStorage",
+				"typeProperties": {
+					"connectionString": "[parameters('AzureBlobStorageLinkedservice_connectionString')]"
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/WeatherMan LS')]",
+			"type": "Microsoft.DataFactory/factories/linkedServices",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"annotations": [],
+				"type": "RestService",
+				"typeProperties": {
+					"url": "[parameters('WeatherMan LS_properties_typeProperties_url')]",
+					"enableServerCertificateValidation": true,
+					"authenticationType": "Anonymous"
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/WeatherStackAPI')]",
+			"type": "Microsoft.DataFactory/factories/linkedServices",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"annotations": [],
+				"type": "RestService",
+				"typeProperties": {
+					"url": "[parameters('WeatherStackAPI_properties_typeProperties_url')]",
+					"enableServerCertificateValidation": true,
+					"authenticationType": "Anonymous"
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/DestinationDataset_1qs')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "AzureBlobStorageLinkedservice",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "DelimitedText",
+				"typeProperties": {
+					"location": {
+						"type": "AzureBlobStorageLocation",
+						"fileName": "inputDataMoved.txt",
+						"container": "outputdata"
+					},
+					"columnDelimiter": "|",
+					"escapeChar": "\\",
+					"quoteChar": "\""
+				},
+				"schema": []
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/AzureBlobStorageLinkedservice')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/SalesCSV')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "AzureBlobStorageLinkedservice",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "DelimitedText",
+				"typeProperties": {
+					"location": {
+						"type": "AzureBlobStorageLocation",
+						"fileName": "sales-data-part1.csv",
+						"container": "inputdata"
+					},
+					"columnDelimiter": ",",
+					"escapeChar": "\\",
+					"firstRowAsHeader": true,
+					"quoteChar": "\""
+				},
+				"schema": [
+					{
+						"name": "InvoiceNo",
+						"type": "String"
+					},
+					{
+						"name": "StockCode",
+						"type": "String"
+					},
+					{
+						"name": "Description",
+						"type": "String"
+					},
+					{
+						"name": "Quantity",
+						"type": "String"
+					},
+					{
+						"name": "InvoiceDate",
+						"type": "String"
+					},
+					{
+						"name": "UnitPrice",
+						"type": "String"
+					},
+					{
+						"name": "CustomerID",
+						"type": "String"
+					},
+					{
+						"name": "Country",
+						"type": "String"
+					}
+				]
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/AzureBlobStorageLinkedservice')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/SalesTargetDS')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "AzureBlobStorageLinkedservice",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "DelimitedText",
+				"typeProperties": {
+					"location": {
+						"type": "AzureBlobStorageLocation",
+						"container": "outputdata"
+					},
+					"columnDelimiter": ",",
+					"escapeChar": "\\",
+					"firstRowAsHeader": true,
+					"quoteChar": "\""
+				},
+				"schema": []
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/AzureBlobStorageLinkedservice')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/SourceDataset_1qs')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "AzureBlobStorageLinkedservice",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "DelimitedText",
+				"typeProperties": {
+					"location": {
+						"type": "AzureBlobStorageLocation",
+						"fileName": "input.txt",
+						"container": "inputdata"
+					},
+					"columnDelimiter": "|",
+					"escapeChar": "\\",
+					"firstRowAsHeader": true,
+					"quoteChar": "\""
+				},
+				"schema": [
+					{
+						"name": "FirstName",
+						"type": "String"
+					},
+					{
+						"name": "LastName",
+						"type": "String"
+					}
+				]
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/AzureBlobStorageLinkedservice')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/WeatherManSource')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "WeatherMan LS",
+					"type": "LinkedServiceReference"
+				},
+				"parameters": {
+					"query": {
+						"type": "string"
+					}
+				},
+				"annotations": [],
+				"type": "RestResource",
+				"typeProperties": {
+					"relativeUrl": {
+						"value": "@concat('http://api.weatherstack.com/current?access_key=31f7fc3d88dc0f174323d59743f173a9', '&query=',dataset().query)",
+						"type": "Expression"
+					}
+				},
+				"schema": []
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/WeatherMan LS')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/WeatherManTarget')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "AzureBlobStorageLinkedservice",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "Binary",
+				"typeProperties": {
+					"location": {
+						"type": "AzureBlobStorageLocation",
+						"container": "outputdata"
+					}
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/AzureBlobStorageLinkedservice')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/CopyPipelineFromBlob_ToBlob')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "Copy_1qs",
+						"type": "Copy",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [
+							{
+								"name": "Source",
+								"value": "inputdata//input.txt"
+							},
+							{
+								"name": "Destination",
+								"value": "outputdata//inputDataMoved.txt"
+							}
+						],
+						"typeProperties": {
+							"source": {
+								"type": "DelimitedTextSource",
+								"storeSettings": {
+									"type": "AzureBlobStorageReadSettings",
+									"recursive": true,
+									"enablePartitionDiscovery": false
+								},
+								"formatSettings": {
+									"type": "DelimitedTextReadSettings",
+									"skipLineCount": 0
+								}
+							},
+							"sink": {
+								"type": "DelimitedTextSink",
+								"storeSettings": {
+									"type": "AzureBlobStorageWriteSettings"
+								},
+								"formatSettings": {
+									"type": "DelimitedTextWriteSettings",
+									"quoteAllText": true,
+									"fileExtension": ".txt"
+								}
+							},
+							"enableStaging": false,
+							"validateDataConsistency": false
+						},
+						"inputs": [
+							{
+								"referenceName": "SourceDataset_1qs",
+								"type": "DatasetReference",
+								"parameters": {}
+							}
+						],
+						"outputs": [
+							{
+								"referenceName": "DestinationDataset_1qs",
+								"type": "DatasetReference",
+								"parameters": {}
+							}
+						]
+					}
+				],
+				"annotations": [],
+				"lastPublishTime": "2021-08-09T16:40:44Z"
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/datasets/SourceDataset_1qs')]",
+				"[concat(variables('factoryId'), '/datasets/DestinationDataset_1qs')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/WeatherAPI_to_DataLake')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "Copy Data From WeatherMan API",
+						"type": "Copy",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"source": {
+								"type": "RestSource",
+								"httpRequestTimeout": "00:01:40",
+								"requestInterval": "00.00:00:00.010",
+								"requestMethod": "GET"
+							},
+							"sink": {
+								"type": "DelimitedTextSink",
+								"storeSettings": {
+									"type": "AzureBlobStorageWriteSettings",
+									"copyBehavior": "FlattenHierarchy"
+								},
+								"formatSettings": {
+									"type": "DelimitedTextWriteSettings",
+									"quoteAllText": true,
+									"fileExtension": ".txt"
+								}
+							},
+							"enableStaging": false,
+							"translator": {
+								"type": "TabularTranslator",
+								"mappings": [
+									{
+										"source": {
+											"path": "$['location']['name']"
+										},
+										"sink": {
+											"name": "name"
+										}
+									},
+									{
+										"source": {
+											"path": "$['location']['country']"
+										},
+										"sink": {
+											"name": "country"
+										}
+									},
+									{
+										"source": {
+											"path": "$['location']['region']"
+										},
+										"sink": {
+											"name": "region"
+										}
+									},
+									{
+										"source": {
+											"path": "$['location']['lat']"
+										},
+										"sink": {
+											"name": "lat"
+										}
+									},
+									{
+										"source": {
+											"path": "$['location']['lon']"
+										},
+										"sink": {
+											"name": "lon"
+										}
+									},
+									{
+										"source": {
+											"path": "$['location']['timezone_id']"
+										},
+										"sink": {
+											"name": "timezone_id"
+										}
+									},
+									{
+										"source": {
+											"path": "$['location']['localtime']"
+										},
+										"sink": {
+											"name": "localtime"
+										}
+									},
+									{
+										"source": {
+											"path": "$['location']['localtime_epoch']"
+										},
+										"sink": {
+											"name": "localtime_epoch"
+										}
+									},
+									{
+										"source": {
+											"path": "$['location']['utc_offset']"
+										},
+										"sink": {
+											"name": "utc_offset"
+										}
+									},
+									{
+										"source": {
+											"path": "$['current']['observation_time']"
+										},
+										"sink": {
+											"name": "observation_time"
+										}
+									},
+									{
+										"source": {
+											"path": "$['current']['temperature']"
+										},
+										"sink": {
+											"name": "temperature"
+										}
+									},
+									{
+										"source": {
+											"path": "$['current']['weather_code']"
+										},
+										"sink": {
+											"name": "weather_code"
+										}
+									},
+									{
+										"source": {
+											"path": "$['current']['wind_speed']"
+										},
+										"sink": {
+											"name": "wind_speed"
+										}
+									},
+									{
+										"source": {
+											"path": "$['current']['wind_degree']"
+										},
+										"sink": {
+											"name": "wind_degree"
+										}
+									},
+									{
+										"source": {
+											"path": "$['current']['wind_dir']"
+										},
+										"sink": {
+											"name": "wind_dir"
+										}
+									},
+									{
+										"source": {
+											"path": "$['current']['pressure']"
+										},
+										"sink": {
+											"name": "pressure"
+										}
+									},
+									{
+										"source": {
+											"path": "$['current']['precip']"
+										},
+										"sink": {
+											"name": "precip"
+										}
+									},
+									{
+										"source": {
+											"path": "$['current']['humidity']"
+										},
+										"sink": {
+											"name": "humidity"
+										}
+									},
+									{
+										"source": {
+											"path": "$['current']['cloudcover']"
+										},
+										"sink": {
+											"name": "cloudcover"
+										}
+									},
+									{
+										"source": {
+											"path": "$['current']['feelslike']"
+										},
+										"sink": {
+											"name": "feelslike"
+										}
+									},
+									{
+										"source": {
+											"path": "$['current']['uv_index']"
+										},
+										"sink": {
+											"name": "uv_index"
+										}
+									},
+									{
+										"source": {
+											"path": "$['current']['visibility']"
+										},
+										"sink": {
+											"name": "visibility"
+										}
+									},
+									{
+										"source": {
+											"path": "$['current']['is_day']"
+										},
+										"sink": {
+											"name": "is_day"
+										}
+									}
+								],
+								"collectionReference": "",
+								"mapComplexValuesToString": false
+							}
+						},
+						"inputs": [
+							{
+								"referenceName": "WeatherManSource",
+								"type": "DatasetReference",
+								"parameters": {
+									"query": "Amsterdam"
+								}
+							}
+						],
+						"outputs": [
+							{
+								"referenceName": "SalesTargetDS",
+								"type": "DatasetReference",
+								"parameters": {}
+							}
+						]
+					}
+				],
+				"annotations": [],
+				"lastPublishTime": "2021-08-10T16:11:46Z"
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/datasets/WeatherManSource')]",
+				"[concat(variables('factoryId'), '/datasets/SalesTargetDS')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/dataflow-demo-partitioning')]",
+			"type": "Microsoft.DataFactory/factories/dataflows",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"type": "MappingDataFlow",
+				"typeProperties": {
+					"sources": [
+						{
+							"dataset": {
+								"referenceName": "SalesCSV",
+								"type": "DatasetReference"
+							},
+							"name": "SalesSourceFile"
+						}
+					],
+					"sinks": [
+						{
+							"dataset": {
+								"referenceName": "SalesTargetDS",
+								"type": "DatasetReference"
+							},
+							"name": "SalesOutputROW"
+						}
+					],
+					"transformations": [],
+					"script": "source(output(\n\t\tInvoiceNo as integer,\n\t\tStockCode as string,\n\t\tDescription as string,\n\t\tQuantity as integer,\n\t\tInvoiceDate as date,\n\t\tUnitPrice as string,\n\t\tCustomerID as integer,\n\t\tCountry as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tignoreNoFilesFound: false) ~> SalesSourceFile\nSalesSourceFile sink(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\trowUrlColumn:'Country',\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> SalesOutputROW"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/datasets/SalesCSV')]",
+				"[concat(variables('factoryId'), '/datasets/SalesTargetDS')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/dataflow-demo')]",
+			"type": "Microsoft.DataFactory/factories/dataflows",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"type": "MappingDataFlow",
+				"typeProperties": {
+					"sources": [
+						{
+							"dataset": {
+								"referenceName": "SalesCSV",
+								"type": "DatasetReference"
+							},
+							"name": "SalesSourceFile"
+						}
+					],
+					"sinks": [
+						{
+							"dataset": {
+								"referenceName": "SalesTargetDS",
+								"type": "DatasetReference"
+							},
+							"name": "SalesOutputFileUK"
+						},
+						{
+							"dataset": {
+								"referenceName": "SalesTargetDS",
+								"type": "DatasetReference"
+							},
+							"name": "SalesOutputFileSpain"
+						},
+						{
+							"dataset": {
+								"referenceName": "SalesTargetDS",
+								"type": "DatasetReference"
+							},
+							"name": "SalesOutpuROW"
+						},
+						{
+							"dataset": {
+								"referenceName": "SalesTargetDS",
+								"type": "DatasetReference"
+							},
+							"name": "CountryWiseSpend"
+						}
+					],
+					"transformations": [
+						{
+							"name": "SplitOnCountry"
+						},
+						{
+							"name": "DerivingCheapOrExpensive"
+						},
+						{
+							"name": "SpentByCountry"
+						},
+						{
+							"name": "RankingBySpends"
+						},
+						{
+							"name": "FilterByRank"
+						}
+					],
+					"script": "source(output(\n\t\tInvoiceNo as integer,\n\t\tStockCode as string,\n\t\tDescription as string,\n\t\tQuantity as integer,\n\t\tInvoiceDate as date,\n\t\tUnitPrice as integer,\n\t\tCustomerID as integer,\n\t\tCountry as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tignoreNoFilesFound: false) ~> SalesSourceFile\nDerivingCheapOrExpensive split(Country=='United Kingdom',\n\tCountry=='Spain',\n\tdisjoint: false) ~> SplitOnCountry@(UKCustomers, SpainCustomers, Default)\nSalesSourceFile derive(PriceType = case( UnitPrice<3,'Cheap',\r\n       UnitPrice>3,'Expensive')) ~> DerivingCheapOrExpensive\nSalesSourceFile aggregate(groupBy(Country),\n\tTotalSpend = sum(Quantity*UnitPrice)) ~> SpentByCountry\nSpentByCountry rank(desc(TotalSpend, true),\n\toutput(Rnk as long)) ~> RankingBySpends\nRankingBySpends filter(Rnk<5) ~> FilterByRank\nSplitOnCountry@UKCustomers sink(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tpartitionFileNames:['SalesOutputUK.csv'],\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true,\n\tpartitionBy('hash', 1)) ~> SalesOutputFileUK\nSplitOnCountry@SpainCustomers sink(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tpartitionFileNames:['SalesSpain.csv'],\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true,\n\tpartitionBy('hash', 1)) ~> SalesOutputFileSpain\nSplitOnCountry@Default sink(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tpartitionFileNames:['SalesOutputROW.csv'],\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true,\n\tpartitionBy('hash', 1)) ~> SalesOutpuROW\nFilterByRank sink(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tpartitionFileNames:['CountryWiseSpend.csv'],\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true,\n\tpartitionBy('hash', 1)) ~> CountryWiseSpend"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/datasets/SalesCSV')]",
+				"[concat(variables('factoryId'), '/datasets/SalesTargetDS')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/DataFlowPipeLine')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "Data flow Demo",
+						"type": "ExecuteDataFlow",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "1.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"dataflow": {
+								"referenceName": "dataflow-demo",
+								"type": "DataFlowReference",
+								"parameters": {},
+								"datasetParameters": {
+									"SalesSourceFile": {},
+									"SalesOutputFileUK": {},
+									"SalesOutputFileSpain": {},
+									"SalesOutpuROW": {},
+									"CountryWiseSpend": {}
+								}
+							},
+							"staging": {},
+							"compute": {
+								"coreCount": 8,
+								"computeType": "General"
+							},
+							"traceLevel": "Fine"
+						}
+					}
+				],
+				"annotations": [],
+				"lastPublishTime": "2021-08-10T06:45:22Z"
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/dataflows/dataflow-demo')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/DataFlowWithPartitions')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "Data flow with Partitions",
+						"type": "ExecuteDataFlow",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "1.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"dataflow": {
+								"referenceName": "dataflow-demo-partitioning",
+								"type": "DataFlowReference",
+								"parameters": {},
+								"datasetParameters": {
+									"SalesSourceFile": {},
+									"SalesOutputROW": {}
+								}
+							},
+							"staging": {},
+							"compute": {
+								"coreCount": 8,
+								"computeType": "General"
+							},
+							"traceLevel": "Fine"
+						}
+					}
+				],
+				"annotations": [],
+				"lastPublishTime": "2021-08-10T07:21:08Z"
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/dataflows/dataflow-demo-partitioning')]"
+			]
+		}
+	]
+}

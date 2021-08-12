@@ -1,0 +1,63 @@
+{
+	"$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+	"contentVersion": "1.0.0.0",
+	"parameters": {
+		"factoryName": {
+			"type": "string",
+			"metadata": "Data Factory name",
+			"defaultValue": "ADFLearnEXL"
+		},
+		"AzureBlobStorageLinkedservice_connectionString": {
+			"type": "secureString",
+			"metadata": "Secure string for 'connectionString' of 'AzureBlobStorageLinkedservice'"
+		},
+		"WeatherMan LS_properties_typeProperties_url": {
+			"type": "string",
+			"defaultValue": "http://api.weatherstack.com/current?access_key=31f7fc3d88dc0f174323d59743f173a9"
+		},
+		"WeatherStackAPI_properties_typeProperties_url": {
+			"type": "string",
+			"defaultValue": "http://api.weatherstack.com/current?access_key=31f7fc3d88dc0f174323d59743f173a9&query=Jamshedpur"
+		},
+		"containerUri": {
+			"type": "string",
+			"metadata": "URI to storage account containing linked ARM templates"
+		},
+		"containerSasToken": {
+			"type": "string",
+			"metadata": "Sas token to storage account containing linked ARM templates"
+		}
+	},
+	"variables": {
+		"factoryId": "[concat('Microsoft.DataFactory/factories/', parameters('factoryName'))]"
+	},
+	"resources": [
+		{
+			"name": "ADFLearnEXL_ArmTemplate_0",
+			"type": "Microsoft.Resources/deployments",
+			"apiVersion": "2018-02-01",
+			"properties": {
+				"mode": "incremental",
+				"templateLink": {
+					"uri": "[concat(parameters('containerUri'), '/ArmTemplate_0.json', parameters('containerSasToken'))]",
+					"contentVersion": "1.0.0.0"
+				},
+				"parameters": {
+					"factoryName": {
+						"value": "[parameters('factoryName')]"
+					},
+					"AzureBlobStorageLinkedservice_connectionString": {
+						"value": "[parameters('AzureBlobStorageLinkedservice_connectionString')]"
+					},
+					"WeatherMan LS_properties_typeProperties_url": {
+						"value": "[parameters('WeatherMan LS_properties_typeProperties_url')]"
+					},
+					"WeatherStackAPI_properties_typeProperties_url": {
+						"value": "[parameters('WeatherStackAPI_properties_typeProperties_url')]"
+					}
+				}
+			},
+			"dependsOn": []
+		}
+	]
+}

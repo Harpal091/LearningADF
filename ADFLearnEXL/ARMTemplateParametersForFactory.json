@@ -1,0 +1,18 @@
+{
+	"$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+	"contentVersion": "1.0.0.0",
+	"parameters": {
+		"factoryName": {
+			"value": "ADFLearnEXL"
+		},
+		"AzureBlobStorageLinkedservice_connectionString": {
+			"value": ""
+		},
+		"WeatherMan LS_properties_typeProperties_url": {
+			"value": "http://api.weatherstack.com/current?access_key=31f7fc3d88dc0f174323d59743f173a9"
+		},
+		"WeatherStackAPI_properties_typeProperties_url": {
+			"value": "http://api.weatherstack.com/current?access_key=31f7fc3d88dc0f174323d59743f173a9&query=Jamshedpur"
+		}
+	}
+}
