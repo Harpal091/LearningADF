@@ -1,0 +1,13 @@
+{
+	"name": "WeatherMan LS",
+	"type": "Microsoft.DataFactory/factories/linkedservices",
+	"properties": {
+		"annotations": [],
+		"type": "RestService",
+		"typeProperties": {
+			"url": "http://api.weatherstack.com/current?access_key=31f7fc3d88dc0f174323d59743f173a9",
+			"enableServerCertificateValidation": true,
+			"authenticationType": "Anonymous"
+		}
+	}
+}

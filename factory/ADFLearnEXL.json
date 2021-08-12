@@ -1,0 +1,9 @@
+{
+	"name": "ADFLearnEXL",
+	"location": "eastus",
+	"identity": {
+		"type": "SystemAssigned",
+		"principalId": "8da5e176-1023-4fe1-8bc8-05396f171fb3",
+		"tenantId": "dafe49bc-5ac3-4310-97b4-3e44a28cbf18"
+	}
+}

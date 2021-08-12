@@ -1,0 +1,250 @@
+{
+	"name": "WeatherAPI_to_DataLake",
+	"properties": {
+		"activities": [
+			{
+				"name": "Copy Data From WeatherMan API",
+				"type": "Copy",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "RestSource",
+						"httpRequestTimeout": "00:01:40",
+						"requestInterval": "00.00:00:00.010",
+						"requestMethod": "GET"
+					},
+					"sink": {
+						"type": "DelimitedTextSink",
+						"storeSettings": {
+							"type": "AzureBlobStorageWriteSettings",
+							"copyBehavior": "FlattenHierarchy"
+						},
+						"formatSettings": {
+							"type": "DelimitedTextWriteSettings",
+							"quoteAllText": true,
+							"fileExtension": ".txt"
+						}
+					},
+					"enableStaging": false,
+					"translator": {
+						"type": "TabularTranslator",
+						"mappings": [
+							{
+								"source": {
+									"path": "$['location']['name']"
+								},
+								"sink": {
+									"name": "name"
+								}
+							},
+							{
+								"source": {
+									"path": "$['location']['country']"
+								},
+								"sink": {
+									"name": "country"
+								}
+							},
+							{
+								"source": {
+									"path": "$['location']['region']"
+								},
+								"sink": {
+									"name": "region"
+								}
+							},
+							{
+								"source": {
+									"path": "$['location']['lat']"
+								},
+								"sink": {
+									"name": "lat"
+								}
+							},
+							{
+								"source": {
+									"path": "$['location']['lon']"
+								},
+								"sink": {
+									"name": "lon"
+								}
+							},
+							{
+								"source": {
+									"path": "$['location']['timezone_id']"
+								},
+								"sink": {
+									"name": "timezone_id"
+								}
+							},
+							{
+								"source": {
+									"path": "$['location']['localtime']"
+								},
+								"sink": {
+									"name": "localtime"
+								}
+							},
+							{
+								"source": {
+									"path": "$['location']['localtime_epoch']"
+								},
+								"sink": {
+									"name": "localtime_epoch"
+								}
+							},
+							{
+								"source": {
+									"path": "$['location']['utc_offset']"
+								},
+								"sink": {
+									"name": "utc_offset"
+								}
+							},
+							{
+								"source": {
+									"path": "$['current']['observation_time']"
+								},
+								"sink": {
+									"name": "observation_time"
+								}
+							},
+							{
+								"source": {
+									"path": "$['current']['temperature']"
+								},
+								"sink": {
+									"name": "temperature"
+								}
+							},
+							{
+								"source": {
+									"path": "$['current']['weather_code']"
+								},
+								"sink": {
+									"name": "weather_code"
+								}
+							},
+							{
+								"source": {
+									"path": "$['current']['wind_speed']"
+								},
+								"sink": {
+									"name": "wind_speed"
+								}
+							},
+							{
+								"source": {
+									"path": "$['current']['wind_degree']"
+								},
+								"sink": {
+									"name": "wind_degree"
+								}
+							},
+							{
+								"source": {
+									"path": "$['current']['wind_dir']"
+								},
+								"sink": {
+									"name": "wind_dir"
+								}
+							},
+							{
+								"source": {
+									"path": "$['current']['pressure']"
+								},
+								"sink": {
+									"name": "pressure"
+								}
+							},
+							{
+								"source": {
+									"path": "$['current']['precip']"
+								},
+								"sink": {
+									"name": "precip"
+								}
+							},
+							{
+								"source": {
+									"path": "$['current']['humidity']"
+								},
+								"sink": {
+									"name": "humidity"
+								}
+							},
+							{
+								"source": {
+									"path": "$['current']['cloudcover']"
+								},
+								"sink": {
+									"name": "cloudcover"
+								}
+							},
+							{
+								"source": {
+									"path": "$['current']['feelslike']"
+								},
+								"sink": {
+									"name": "feelslike"
+								}
+							},
+							{
+								"source": {
+									"path": "$['current']['uv_index']"
+								},
+								"sink": {
+									"name": "uv_index"
+								}
+							},
+							{
+								"source": {
+									"path": "$['current']['visibility']"
+								},
+								"sink": {
+									"name": "visibility"
+								}
+							},
+							{
+								"source": {
+									"path": "$['current']['is_day']"
+								},
+								"sink": {
+									"name": "is_day"
+								}
+							}
+						],
+						"collectionReference": "",
+						"mapComplexValuesToString": false
+					}
+				},
+				"inputs": [
+					{
+						"referenceName": "WeatherManSource",
+						"type": "DatasetReference",
+						"parameters": {
+							"query": "Amsterdam"
+						}
+					}
+				],
+				"outputs": [
+					{
+						"referenceName": "SalesTargetDS",
+						"type": "DatasetReference"
+					}
+				]
+			}
+		],
+		"annotations": [],
+		"lastPublishTime": "2021-08-10T16:11:46Z"
+	},
+	"type": "Microsoft.DataFactory/factories/pipelines"
+}

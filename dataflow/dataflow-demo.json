@@ -1,0 +1,65 @@
+{
+	"name": "dataflow-demo",
+	"properties": {
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "SalesCSV",
+						"type": "DatasetReference"
+					},
+					"name": "SalesSourceFile"
+				}
+			],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "SalesTargetDS",
+						"type": "DatasetReference"
+					},
+					"name": "SalesOutputFileUK"
+				},
+				{
+					"dataset": {
+						"referenceName": "SalesTargetDS",
+						"type": "DatasetReference"
+					},
+					"name": "SalesOutputFileSpain"
+				},
+				{
+					"dataset": {
+						"referenceName": "SalesTargetDS",
+						"type": "DatasetReference"
+					},
+					"name": "SalesOutpuROW"
+				},
+				{
+					"dataset": {
+						"referenceName": "SalesTargetDS",
+						"type": "DatasetReference"
+					},
+					"name": "CountryWiseSpend"
+				}
+			],
+			"transformations": [
+				{
+					"name": "SplitOnCountry"
+				},
+				{
+					"name": "DerivingCheapOrExpensive"
+				},
+				{
+					"name": "SpentByCountry"
+				},
+				{
+					"name": "RankingBySpends"
+				},
+				{
+					"name": "FilterByRank"
+				}
+			],
+			"script": "source(output(\n\t\tInvoiceNo as integer,\n\t\tStockCode as string,\n\t\tDescription as string,\n\t\tQuantity as integer,\n\t\tInvoiceDate as date,\n\t\tUnitPrice as integer,\n\t\tCustomerID as integer,\n\t\tCountry as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tignoreNoFilesFound: false) ~> SalesSourceFile\nDerivingCheapOrExpensive split(Country=='United Kingdom',\n\tCountry=='Spain',\n\tdisjoint: false) ~> SplitOnCountry@(UKCustomers, SpainCustomers, Default)\nSalesSourceFile derive(PriceType = case( UnitPrice<3,'Cheap',\r\n       UnitPrice>3,'Expensive')) ~> DerivingCheapOrExpensive\nSalesSourceFile aggregate(groupBy(Country),\n\tTotalSpend = sum(Quantity*UnitPrice)) ~> SpentByCountry\nSpentByCountry rank(desc(TotalSpend, true),\n\toutput(Rnk as long)) ~> RankingBySpends\nRankingBySpends filter(Rnk<5) ~> FilterByRank\nSplitOnCountry@UKCustomers sink(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tpartitionFileNames:['SalesOutputUK.csv'],\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true,\n\tpartitionBy('hash', 1)) ~> SalesOutputFileUK\nSplitOnCountry@SpainCustomers sink(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tpartitionFileNames:['SalesSpain.csv'],\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true,\n\tpartitionBy('hash', 1)) ~> SalesOutputFileSpain\nSplitOnCountry@Default sink(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tpartitionFileNames:['SalesOutputROW.csv'],\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true,\n\tpartitionBy('hash', 1)) ~> SalesOutpuROW\nFilterByRank sink(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tpartitionFileNames:['CountryWiseSpend.csv'],\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true,\n\tpartitionBy('hash', 1)) ~> CountryWiseSpend"
+		}
+	}
+}

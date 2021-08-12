@@ -1,0 +1,62 @@
+{
+	"name": "Webactivity",
+	"properties": {
+		"activities": [
+			{
+				"name": "WeatherMan",
+				"type": "WebActivity",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"url": {
+						"value": "@concat('http://api.weatherstack.com/current?access_key=31f7fc3d88dc0f174323d59743f173a9','&query=',pipeline().parameters.query)",
+						"type": "Expression"
+					},
+					"method": "GET"
+				}
+			},
+			{
+				"name": "GetWeatherCountry",
+				"type": "WebActivity",
+				"dependsOn": [
+					{
+						"activity": "WeatherMan",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"url": {
+						"value": "@concat('http://api.weatherstack.com/current?access_key=31f7fc3d88dc0f174323d59743f173a9','&query=',activity('WeatherMan').output.location.country)",
+						"type": "Expression"
+					},
+					"method": "GET"
+				}
+			}
+		],
+		"parameters": {
+			"query": {
+				"type": "string"
+			}
+		},
+		"annotations": [],
+		"lastPublishTime": "2021-08-11T07:29:24Z"
+	},
+	"type": "Microsoft.DataFactory/factories/pipelines"
+}
