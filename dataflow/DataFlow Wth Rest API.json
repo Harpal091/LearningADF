@@ -1,0 +1,28 @@
+{
+	"name": "DataFlow Wth Rest API",
+	"properties": {
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "WeatherManSource",
+						"type": "DatasetReference"
+					},
+					"name": "WeatherManRestAPI"
+				}
+			],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "SalesTargetDS",
+						"type": "DatasetReference"
+					},
+					"name": "BlobSink"
+				}
+			],
+			"transformations": [],
+			"script": "source(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tlimit: 100,\n\thttpMethod: 'GET',\n\ttimeout: 30,\n\tresponseFormat: ['type' -> 'json', 'documentForm' -> 'singleDocument']) ~> WeatherManRestAPI\nWeatherManRestAPI sink(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> BlobSink"
+		}
+	}
+}

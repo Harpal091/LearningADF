@@ -7,17 +7,12 @@
 		},
 		"parameters": {
 			"query": {
-				"type": "string"
+				"type": "string",
+				"defaultValue": "Jamshedpur"
 			}
 		},
 		"annotations": [],
 		"type": "RestResource",
-		"typeProperties": {
-			"relativeUrl": {
-				"value": "@concat('http://api.weatherstack.com/current?access_key=31f7fc3d88dc0f174323d59743f173a9', '&query=',dataset().query)",
-				"type": "Expression"
-			}
-		},
 		"schema": []
 	},
 	"type": "Microsoft.DataFactory/factories/datasets"
