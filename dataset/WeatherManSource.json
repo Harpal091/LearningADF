@@ -5,12 +5,6 @@
 			"referenceName": "WeatherMan LS",
 			"type": "LinkedServiceReference"
 		},
-		"parameters": {
-			"query": {
-				"type": "string",
-				"defaultValue": "Jamshedpur"
-			}
-		},
 		"annotations": [],
 		"type": "RestResource",
 		"schema": []
