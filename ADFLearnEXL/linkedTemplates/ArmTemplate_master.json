@@ -7,9 +7,29 @@
 			"metadata": "Data Factory name",
 			"defaultValue": "ADFLearnEXL"
 		},
+		"AzureBatchLS_accessKey": {
+			"type": "secureString",
+			"metadata": "Secure string for 'accessKey' of 'AzureBatchLS'"
+		},
+		"AzureBlobStorage1_connectionString": {
+			"type": "secureString",
+			"metadata": "Secure string for 'connectionString' of 'AzureBlobStorage1'"
+		},
 		"AzureBlobStorageLinkedservice_connectionString": {
 			"type": "secureString",
 			"metadata": "Secure string for 'connectionString' of 'AzureBlobStorageLinkedservice'"
+		},
+		"AzureBatchLS_properties_typeProperties_batchUri": {
+			"type": "string",
+			"defaultValue": "https://mybatchservice162336.eastus.batch.azure.com"
+		},
+		"AzureBatchLS_properties_typeProperties_poolName": {
+			"type": "string",
+			"defaultValue": "pythonpool"
+		},
+		"AzureBatchLS_properties_typeProperties_accountName": {
+			"type": "string",
+			"defaultValue": "mybatchservice162336"
 		},
 		"WeatherMan LS_properties_typeProperties_url": {
 			"type": "string",
@@ -46,14 +66,29 @@
 					"factoryName": {
 						"value": "[parameters('factoryName')]"
 					},
+					"AzureBlobStorage1_connectionString": {
+						"value": "[parameters('AzureBlobStorage1_connectionString')]"
+					},
 					"AzureBlobStorageLinkedservice_connectionString": {
 						"value": "[parameters('AzureBlobStorageLinkedservice_connectionString')]"
+					},
+					"AzureBatchLS_accessKey": {
+						"value": "[parameters('AzureBatchLS_accessKey')]"
 					},
 					"WeatherMan LS_properties_typeProperties_url": {
 						"value": "[parameters('WeatherMan LS_properties_typeProperties_url')]"
 					},
 					"WeatherStackAPI_properties_typeProperties_url": {
 						"value": "[parameters('WeatherStackAPI_properties_typeProperties_url')]"
+					},
+					"AzureBatchLS_properties_typeProperties_batchUri": {
+						"value": "[parameters('AzureBatchLS_properties_typeProperties_batchUri')]"
+					},
+					"AzureBatchLS_properties_typeProperties_poolName": {
+						"value": "[parameters('AzureBatchLS_properties_typeProperties_poolName')]"
+					},
+					"AzureBatchLS_properties_typeProperties_accountName": {
+						"value": "[parameters('AzureBatchLS_properties_typeProperties_accountName')]"
 					}
 				}
 			},

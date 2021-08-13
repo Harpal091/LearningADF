@@ -5,8 +5,23 @@
 		"factoryName": {
 			"value": "ADFLearnEXL"
 		},
+		"AzureBatchLS_accessKey": {
+			"value": ""
+		},
+		"AzureBlobStorage1_connectionString": {
+			"value": ""
+		},
 		"AzureBlobStorageLinkedservice_connectionString": {
 			"value": ""
+		},
+		"AzureBatchLS_properties_typeProperties_batchUri": {
+			"value": "https://mybatchservice162336.eastus.batch.azure.com"
+		},
+		"AzureBatchLS_properties_typeProperties_poolName": {
+			"value": "pythonpool"
+		},
+		"AzureBatchLS_properties_typeProperties_accountName": {
+			"value": "mybatchservice162336"
 		},
 		"WeatherMan LS_properties_typeProperties_url": {
 			"value": "http://api.weatherstack.com/current?access_key=31f7fc3d88dc0f174323d59743f173a9"
