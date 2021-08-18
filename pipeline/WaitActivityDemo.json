@@ -12,6 +12,11 @@
 				}
 			}
 		],
+		"parameters": {
+			"CheckingNow": {
+				"type": "string"
+			}
+		},
 		"annotations": []
 	}
 }
