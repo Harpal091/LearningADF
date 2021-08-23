@@ -15,9 +15,9 @@
 		"typeProperties": {
 			"recurrence": {
 				"frequency": "Minute",
-				"interval": 10,
-				"startTime": "2021-08-23T11:45:00Z",
-				"timeZone": "UTC"
+				"interval": 15,
+				"startTime": "2021-08-23T11:45:00",
+				"timeZone": "India Standard Time"
 			}
 		}
 	}
