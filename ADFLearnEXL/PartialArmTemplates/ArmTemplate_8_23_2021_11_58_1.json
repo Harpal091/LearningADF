@@ -24,8 +24,7 @@
 						"pipelineReference": {
 							"referenceName": "DataFlowPipeLine",
 							"type": "PipelineReference"
-						},
-						"parameters": {}
+						}
 					}
 				],
 				"type": "ScheduleTrigger",
